@@ -68,6 +68,11 @@
       font-weight: normal;
       color: #555;
     }
+    .indent {
+      margin-left: 20px;
+      font-size: 13px;
+      color: #666;
+    }
     .verification {
       font-weight: bold;
       color: #28a745; /* Green color for success */
@@ -117,15 +122,21 @@
     <div class="result-item"><strong>Base Price:</strong> R<span id="basePrice">0.00</span></div>
     <div class="result-item"><strong>Driver Delivery Charge:</strong> R<span id="driverDeliveryCharge">0.00</span></div>
     <div class="result-item"><strong>Total Shopperr Commission:</strong> R<span id="totalShopperrCommission">0.00</span></div>
-    <div class="result-item"><strong>Shopperr Commission from Store:</strong> R<span id="shopperrCommissionFromStore">0.00</span></div>
-    <div class="result-item"><strong>Shopperr Commission from Customer:</strong> R<span id="shopperrCommissionFromCustomer">0.00</span></div>
-    <div class="result-item"><strong>Shopperr Contribution to Delivery:</strong> R<span id="shopperrContributionToDelivery">0.00</span></div>
-    <div class="result-item"><strong>Customer Delivery Charge:</strong> R<span id="customerDeliveryCharge">0.00</span></div>
-    <div class="result-item"><strong>Returned Excess:</strong> R<span id="returnedExcess">0.00</span></div>
     <div class="result-item"><strong>Total Bill:</strong> R<span id="totalBill">0.00</span></div>
+
+    <!-- Payouts Section -->
     <div class="result-item"><strong>Payout to Store:</strong> R<span id="payoutToStore">0.00</span></div>
+    <div class="indent">Commission: R<span id="storeCommission">0.00</span></div>
+    <div class="indent">Card Fees: R<span id="storeCardFees">0.00</span></div>
+
     <div class="result-item"><strong>Payout to Driver:</strong> R<span id="payoutToDriver">0.00</span></div>
+    <div class="indent">Card Fees: R<span id="driverCardFees">0.00</span></div>
+
     <div class="result-item"><strong>Payout to Shopperr:</strong> R<span id="payoutToShopperr">0.00</span></div>
+    <div class="indent">Commission: R<span id="shopperrCommission">0.00</span></div>
+    <div class="indent">Contribution to Delivery: R<span id="shopperrContribution">0.00</span></div>
+    <div class="indent">Card Fees: R<span id="shopperrCardFees">0.00</span></div>
+
     <div class="result-item"><strong>Total Card Fees:</strong> R<span id="totalCardFees">0.00</span></div>
     <div class="result-item verification"><strong>Verification:</strong> <span id="verificationResult"></span></div>
   </div>
@@ -191,22 +202,30 @@
 
       // Verification
       const verificationTotal = payoutToStore + payoutToDriver + payoutToShopperr + totalCardFees;
-      const isVerified = Math.abs(verificationTotal - listPrice) <= 0.01; // Allow minor decimal deviation
+      const isVerified = Math.abs(verificationTotal - listPrice) <= 0.01;
 
       // Display Results
       document.getElementById('basePrice').textContent = basePrice.toFixed(2);
       document.getElementById('driverDeliveryCharge').textContent = driverDeliveryCharge.toFixed(2);
       document.getElementById('totalShopperrCommission').textContent = totalShopperrCommission.toFixed(2);
-      document.getElementById('shopperrCommissionFromStore').textContent = shopperrCommissionFromStore.toFixed(2); // Display store contribution
-      document.getElementById('shopperrCommissionFromCustomer').textContent = shopperrCommissionFromCustomer.toFixed(2); // Display customer contribution
-      document.getElementById('shopperrContributionToDelivery').textContent = shopperrContributionToDelivery.toFixed(2);
-      document.getElementById('customerDeliveryCharge').textContent = customerDeliveryCharge.toFixed(2);
-      document.getElementById('returnedExcess').textContent = returnedExcess.toFixed(2);
       document.getElementById('totalBill').textContent = totalBill.toFixed(2);
 
+      // Store Payout Breakdown
       document.getElementById('payoutToStore').textContent = payoutToStore.toFixed(2);
+      document.getElementById('storeCommission').textContent = totalShopperrCommission.toFixed(2);
+      document.getElementById('storeCardFees').textContent = storeCardFee.toFixed(2);
+
+      // Driver Payout Breakdown
       document.getElementById('payoutToDriver').textContent = payoutToDriver.toFixed(2);
+      document.getElementById('driverCardFees').textContent = driverCardFee.toFixed(2);
+
+      // Shopperr Payout Breakdown
       document.getElementById('payoutToShopperr').textContent = payoutToShopperr.toFixed(2);
+      document.getElementById('shopperrCommission').textContent = totalShopperrCommission.toFixed(2);
+      document.getElementById('shopperrContribution').textContent = shopperrContributionToDelivery.toFixed(2);
+      document.getElementById('shopperrCardFees').textContent = shopperrCardFee.toFixed(2);
+
+      // Total Card Fees
       document.getElementById('totalCardFees').textContent = totalCardFees.toFixed(2);
 
       // Verification Output
