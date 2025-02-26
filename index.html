@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Content Security Policy for enhanced security -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
-  <title>DeliveryPayout Calculator</title>
+  <title>DeliveryCostAndPayout Calculator</title>
   <style>
     /* Basic styling for responsiveness and aesthetics */
     body {
@@ -68,11 +68,18 @@
       font-weight: normal;
       color: #555;
     }
+    .verification {
+      font-weight: bold;
+      color: #28a745; /* Green color for success */
+    }
+    .verification.error {
+      color: #dc3545; /* Red color for error */
+    }
   </style>
 </head>
 <body>
 <div class="container">
-  <h1>DeliveryPayout Calculator</h1>
+  <h1>DeliveryCostAndPayout Calculator</h1>
 
   <!-- Global Settings -->
   <div>
@@ -81,10 +88,10 @@
     <input type="number" id="basicDeliveryFee" value="25" step="0.01">
     <label>Per KM Charge (R):</label>
     <input type="number" id="perKmCharge" value="4" step="0.01">
-    <label>Shopper Excess Split (%):</label>
-    <input type="number" id="shopperExcessSplit" value="50" step="0.01">
-    <label>Minimum Shopper Earnings (R):</label>
-    <input type="number" id="minimumShopperEarnings" value="7" step="0.01">
+    <label>Shopperr Excess Split (%):</label>
+    <input type="number" id="shopperrExcessSplit" value="50" step="0.01">
+    <label>Minimum Shopperr Earnings (R):</label>
+    <input type="number" id="minimumShopperrEarnings" value="7" step="0.01">
     <label>Store Contribution Percentage (%):</label>
     <input type="number" id="storeContributionPercentage" value="5" step="0.01">
     <label>Customer Contribution Percentage (%):</label>
@@ -109,17 +116,18 @@
   <div class="results" id="results" style="display: none;">
     <div class="result-item"><strong>Base Price:</strong> R<span id="basePrice">0.00</span></div>
     <div class="result-item"><strong>Driver Delivery Charge:</strong> R<span id="driverDeliveryCharge">0.00</span></div>
-    <div class="result-item"><strong>Total Shopper Commission:</strong> R<span id="totalShopperCommission">0.00</span></div>
-    <div class="result-item"><strong>Shopper Commission from Store:</strong> R<span id="shopperCommissionFromStore">0.00</span></div>
-    <div class="result-item"><strong>Shopper Commission from Customer:</strong> R<span id="shopperCommissionFromCustomer">0.00</span></div>
-    <div class="result-item"><strong>Shopper Contribution to Delivery:</strong> R<span id="shopperContributionToDelivery">0.00</span></div>
+    <div class="result-item"><strong>Total Shopperr Commission:</strong> R<span id="totalShopperrCommission">0.00</span></div>
+    <div class="result-item"><strong>Shopperr Commission from Store:</strong> R<span id="shopperrCommissionFromStore">0.00</span></div>
+    <div class="result-item"><strong>Shopperr Commission from Customer:</strong> R<span id="shopperrCommissionFromCustomer">0.00</span></div>
+    <div class="result-item"><strong>Shopperr Contribution to Delivery:</strong> R<span id="shopperrContributionToDelivery">0.00</span></div>
     <div class="result-item"><strong>Customer Delivery Charge:</strong> R<span id="customerDeliveryCharge">0.00</span></div>
     <div class="result-item"><strong>Returned Excess:</strong> R<span id="returnedExcess">0.00</span></div>
     <div class="result-item"><strong>Total Bill:</strong> R<span id="totalBill">0.00</span></div>
     <div class="result-item"><strong>Payout to Store:</strong> R<span id="payoutToStore">0.00</span></div>
     <div class="result-item"><strong>Payout to Driver:</strong> R<span id="payoutToDriver">0.00</span></div>
-    <div class="result-item"><strong>Payout to Shopper:</strong> R<span id="payoutToShopper">0.00</span></div>
+    <div class="result-item"><strong>Payout to Shopperr:</strong> R<span id="payoutToShopperr">0.00</span></div>
     <div class="result-item"><strong>Total Card Fees:</strong> R<span id="totalCardFees">0.00</span></div>
+    <div class="result-item verification"><strong>Verification:</strong> <span id="verificationResult"></span></div>
   </div>
 </div>
 
@@ -135,8 +143,8 @@
     // Input Validation
     const basicDeliveryFee = validateInput('basicDeliveryFee', 25);
     const perKmCharge = validateInput('perKmCharge', 4);
-    const shopperExcessSplit = validateInput('shopperExcessSplit', 50) / 100;
-    const minimumShopperEarnings = validateInput('minimumShopperEarnings', 7);
+    const shopperrExcessSplit = validateInput('shopperrExcessSplit', 50) / 100;
+    const minimumShopperrEarnings = validateInput('minimumShopperrEarnings', 7);
     const storeContributionPercentage = validateInput('storeContributionPercentage', 5);
     const customerContributionPercentage = validateInput('customerContributionPercentage', 10);
     const cardFeePercentage = validateInput('cardFeePercentage', 3) / 100;
@@ -150,14 +158,14 @@
       const extraKmCharge = extraKm * perKmCharge;
       const driverDeliveryCharge = basicDeliveryFee + extraKmCharge;
 
-      // Revised Shopper Commission Calculation
-      const shopperCommissionFromStore = (basePrice / 100) * storeContributionPercentage;
-      const shopperCommissionFromCustomer = (basePrice / 100) * customerContributionPercentage;
-      const totalShopperCommission = shopperCommissionFromStore + shopperCommissionFromCustomer;
+      // Revised Shopperr Commission Calculation
+      const shopperrCommissionFromStore = (basePrice / 100) * storeContributionPercentage;
+      const shopperrCommissionFromCustomer = (basePrice / 100) * customerContributionPercentage;
+      const totalShopperrCommission = shopperrCommissionFromStore + shopperrCommissionFromCustomer;
 
-      const excessEarnings = Math.max(0, totalShopperCommission - minimumShopperEarnings);
-      const shopperContributionToDelivery = Math.round(excessEarnings * shopperExcessSplit);
-      let customerDeliveryCharge = driverDeliveryCharge - shopperContributionToDelivery;
+      const excessEarnings = Math.max(0, totalShopperrCommission - minimumShopperrEarnings);
+      const shopperrContributionToDelivery = Math.round(excessEarnings * shopperrExcessSplit);
+      let customerDeliveryCharge = driverDeliveryCharge - shopperrContributionToDelivery;
       let returnedExcess = 0;
 
       if (customerDeliveryCharge < 0) {
@@ -168,34 +176,45 @@
       const totalBill = listPrice + customerDeliveryCharge;
 
       // Payout Calculations
-      const storeNetAmount = basePrice - totalShopperCommission;
+      const storeNetAmount = basePrice - totalShopperrCommission;
       const storeCardFee = storeNetAmount * cardFeePercentage;
       const payoutToStore = storeNetAmount - storeCardFee;
 
       const driverCardFee = driverDeliveryCharge * cardFeePercentage;
       const payoutToDriver = driverDeliveryCharge - driverCardFee;
 
-      const shopperCardFee = totalShopperCommission * cardFeePercentage;
-      const payoutToShopper = (totalShopperCommission - shopperContributionToDelivery) + returnedExcess - shopperCardFee;
+      const shopperrCardFee = totalShopperrCommission * cardFeePercentage;
+      const payoutToShopperr = (totalShopperrCommission - shopperrContributionToDelivery) + returnedExcess - shopperrCardFee;
 
       // Total Card Fees
-      const totalCardFees = storeCardFee + driverCardFee + shopperCardFee;
+      const totalCardFees = storeCardFee + driverCardFee + shopperrCardFee;
+
+      // Verification
+      const verificationTotal = payoutToStore + payoutToDriver + payoutToShopperr + totalCardFees;
+      const isVerified = Math.abs(verificationTotal - listPrice) <= 0.01; // Allow minor decimal deviation
 
       // Display Results
       document.getElementById('basePrice').textContent = basePrice.toFixed(2);
       document.getElementById('driverDeliveryCharge').textContent = driverDeliveryCharge.toFixed(2);
-      document.getElementById('totalShopperCommission').textContent = totalShopperCommission.toFixed(2);
-      document.getElementById('shopperCommissionFromStore').textContent = shopperCommissionFromStore.toFixed(2); // Display store contribution
-      document.getElementById('shopperCommissionFromCustomer').textContent = shopperCommissionFromCustomer.toFixed(2); // Display customer contribution
-      document.getElementById('shopperContributionToDelivery').textContent = shopperContributionToDelivery.toFixed(2);
+      document.getElementById('totalShopperrCommission').textContent = totalShopperrCommission.toFixed(2);
+      document.getElementById('shopperrCommissionFromStore').textContent = shopperrCommissionFromStore.toFixed(2); // Display store contribution
+      document.getElementById('shopperrCommissionFromCustomer').textContent = shopperrCommissionFromCustomer.toFixed(2); // Display customer contribution
+      document.getElementById('shopperrContributionToDelivery').textContent = shopperrContributionToDelivery.toFixed(2);
       document.getElementById('customerDeliveryCharge').textContent = customerDeliveryCharge.toFixed(2);
       document.getElementById('returnedExcess').textContent = returnedExcess.toFixed(2);
       document.getElementById('totalBill').textContent = totalBill.toFixed(2);
 
       document.getElementById('payoutToStore').textContent = payoutToStore.toFixed(2);
       document.getElementById('payoutToDriver').textContent = payoutToDriver.toFixed(2);
-      document.getElementById('payoutToShopper').textContent = payoutToShopper.toFixed(2);
+      document.getElementById('payoutToShopperr').textContent = payoutToShopperr.toFixed(2);
       document.getElementById('totalCardFees').textContent = totalCardFees.toFixed(2);
+
+      // Verification Output
+      const verificationMessage = isVerified
+        ? ` Verified: ${verificationTotal.toFixed(2)} matches List Price (${listPrice.toFixed(2)})`
+        : ` Error: ${verificationTotal.toFixed(2)} does not match List Price (${listPrice.toFixed(2)})`;
+      document.getElementById('verificationResult').textContent = verificationMessage;
+      document.getElementById('verificationResult').className = isVerified ? 'verification' : 'verification error';
 
       document.getElementById('results').style.display = 'block';
     } catch (error) {
