@@ -127,7 +127,7 @@
     <!-- Payouts Section -->
     <div class="result-item"><strong>Payout to Store:</strong> R<span id="payoutToStore">0.00</span></div>
     <div class="indent">Base Price: R<span id="storeBasePrice">0.00</span></div>
-    <div class="indent">Shopperr Commission: R<span id="storeShopperrCommission">0.00</span></div>
+    <div class="indent">Shopperr Commission (Store Portion): R<span id="storeShopperrCommission">0.00</span></div>
     <div class="indent">Card Fees: R<span id="storeCardFees">0.00</span></div>
 
     <div class="result-item"><strong>Payout to Driver:</strong> R<span id="payoutToDriver">0.00</span></div>
@@ -189,7 +189,7 @@
       const totalBill = listPrice + customerDeliveryCharge;
 
       // Payout Calculations
-      const storeNetAmount = basePrice - totalShopperrCommission;
+      const storeNetAmount = basePrice - shopperrCommissionFromStore; // Only deduct store's portion of commission
       const storeCardFee = storeNetAmount * cardFeePercentage;
       const payoutToStore = storeNetAmount - storeCardFee;
 
@@ -215,7 +215,7 @@
       // Store Payout Breakdown
       document.getElementById('payoutToStore').textContent = payoutToStore.toFixed(2);
       document.getElementById('storeBasePrice').textContent = basePrice.toFixed(2);
-      document.getElementById('storeShopperrCommission').textContent = totalShopperrCommission.toFixed(2);
+      document.getElementById('storeShopperrCommission').textContent = shopperrCommissionFromStore.toFixed(2); // Only store's portion
       document.getElementById('storeCardFees').textContent = storeCardFee.toFixed(2);
 
       // Driver Payout Breakdown
