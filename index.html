@@ -85,8 +85,6 @@
     <input type="number" id="shopperExcessSplit" value="50" step="0.01">
     <label>Minimum Shopper Earnings (R):</label>
     <input type="number" id="minimumShopperEarnings" value="7" step="0.01">
-    <label>Shopper Commission Percentage (%):</label>
-    <input type="number" id="shopperCommissionPercentage" value="15" step="0.01">
     <label>Store Contribution Percentage (%):</label>
     <input type="number" id="storeContributionPercentage" value="5" step="0.01">
     <label>Customer Contribution Percentage (%):</label>
@@ -110,10 +108,12 @@
     <div class="result-item"><strong>Base Price:</strong> R<span id="basePrice">0.00</span></div>
     <div class="result-item"><strong>Driver Delivery Charge:</strong> R<span id="driverDeliveryCharge">0.00</span></div>
     <div class="result-item"><strong>Total Shopper Commission:</strong> R<span id="totalShopperCommission">0.00</span></div>
+    <div class="result-item"><strong>Shopper Commission from Store:</strong> R<span id="shopperCommissionFromStore">0.00</span></div>
+    <div class="result-item"><strong>Shopper Commission from Customer:</strong> R<span id="shopperCommissionFromCustomer">0.00</span></div>
     <div class="result-item"><strong>Shopper Contribution to Delivery:</strong> R<span id="shopperContributionToDelivery">0.00</span></div>
     <div class="result-item"><strong>Customer Delivery Charge:</strong> R<span id="customerDeliveryCharge">0.00</span></div>
     <div class="result-item"><strong>Returned Excess:</strong> R<span id="returnedExcess">0.00</span></div>
-    <div class="result-item"><strong>Total Bill (Before Fees):</strong> R<span id="totalBillBeforeFees">0.00</span></div>
+    <div class="result-item"><strong>Total Bill:</strong> R<span id="totalBill">0.00</span></div>
   </div>
 </div>
 
@@ -131,7 +131,6 @@
     const perKmCharge = validateInput('perKmCharge', 4);
     const shopperExcessSplit = validateInput('shopperExcessSplit', 50) / 100;
     const minimumShopperEarnings = validateInput('minimumShopperEarnings', 7);
-    const shopperCommissionPercentage = validateInput('shopperCommissionPercentage', 15);
     const storeContributionPercentage = validateInput('storeContributionPercentage', 5);
     const customerContributionPercentage = validateInput('customerContributionPercentage', 10);
     const listPrice = validateInput('listPrice', 1100);
@@ -144,8 +143,9 @@
       const extraKmCharge = extraKm * perKmCharge;
       const driverDeliveryCharge = basicDeliveryFee + extraKmCharge;
 
-      const shopperCommissionFromStore = Math.round(basePrice * (shopperCommissionPercentage * storeContributionPercentage / 10000));
-      const shopperCommissionFromCustomer = Math.round(basePrice * (shopperCommissionPercentage * customerContributionPercentage / 10000));
+      // Revised Shopper Commission Calculation
+      const shopperCommissionFromStore = (basePrice / 100) * storeContributionPercentage;
+      const shopperCommissionFromCustomer = (basePrice / 100) * customerContributionPercentage;
       const totalShopperCommission = shopperCommissionFromStore + shopperCommissionFromCustomer;
 
       const excessEarnings = Math.max(0, totalShopperCommission - minimumShopperEarnings);
@@ -158,16 +158,18 @@
         customerDeliveryCharge = 0;
       }
 
-      const totalBillBeforeFees = listPrice + customerDeliveryCharge;
+      const totalBill = listPrice + customerDeliveryCharge;
 
       // Display Results
       document.getElementById('basePrice').textContent = basePrice.toFixed(2);
       document.getElementById('driverDeliveryCharge').textContent = driverDeliveryCharge.toFixed(2);
       document.getElementById('totalShopperCommission').textContent = totalShopperCommission.toFixed(2);
+      document.getElementById('shopperCommissionFromStore').textContent = shopperCommissionFromStore.toFixed(2); // Display store contribution
+      document.getElementById('shopperCommissionFromCustomer').textContent = shopperCommissionFromCustomer.toFixed(2); // Display customer contribution
       document.getElementById('shopperContributionToDelivery').textContent = shopperContributionToDelivery.toFixed(2);
       document.getElementById('customerDeliveryCharge').textContent = customerDeliveryCharge.toFixed(2);
       document.getElementById('returnedExcess').textContent = returnedExcess.toFixed(2);
-      document.getElementById('totalBillBeforeFees').textContent = totalBillBeforeFees.toFixed(2);
+      document.getElementById('totalBill').textContent = totalBill.toFixed(2);
 
       document.getElementById('results').style.display = 'block';
     } catch (error) {
