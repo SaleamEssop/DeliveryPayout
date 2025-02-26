@@ -126,14 +126,16 @@
 
     <!-- Payouts Section -->
     <div class="result-item"><strong>Payout to Store:</strong> R<span id="payoutToStore">0.00</span></div>
-    <div class="indent">Commission: R<span id="storeCommission">0.00</span></div>
+    <div class="indent">Base Price: R<span id="storeBasePrice">0.00</span></div>
+    <div class="indent">Shopperr Commission: R<span id="storeShopperrCommission">0.00</span></div>
     <div class="indent">Card Fees: R<span id="storeCardFees">0.00</span></div>
 
     <div class="result-item"><strong>Payout to Driver:</strong> R<span id="payoutToDriver">0.00</span></div>
+    <div class="indent">Driver Delivery Charge: R<span id="driverDeliveryChargeBreakdown">0.00</span></div>
     <div class="indent">Card Fees: R<span id="driverCardFees">0.00</span></div>
 
     <div class="result-item"><strong>Payout to Shopperr:</strong> R<span id="payoutToShopperr">0.00</span></div>
-    <div class="indent">Commission: R<span id="shopperrCommission">0.00</span></div>
+    <div class="indent">Total Commission: R<span id="shopperrCommission">0.00</span></div>
     <div class="indent">Contribution to Delivery: R<span id="shopperrContribution">0.00</span></div>
     <div class="indent">Card Fees: R<span id="shopperrCardFees">0.00</span></div>
 
@@ -212,11 +214,13 @@
 
       // Store Payout Breakdown
       document.getElementById('payoutToStore').textContent = payoutToStore.toFixed(2);
-      document.getElementById('storeCommission').textContent = totalShopperrCommission.toFixed(2);
+      document.getElementById('storeBasePrice').textContent = basePrice.toFixed(2);
+      document.getElementById('storeShopperrCommission').textContent = totalShopperrCommission.toFixed(2);
       document.getElementById('storeCardFees').textContent = storeCardFee.toFixed(2);
 
       // Driver Payout Breakdown
       document.getElementById('payoutToDriver').textContent = payoutToDriver.toFixed(2);
+      document.getElementById('driverDeliveryChargeBreakdown').textContent = driverDeliveryCharge.toFixed(2);
       document.getElementById('driverCardFees').textContent = driverCardFee.toFixed(2);
 
       // Shopperr Payout Breakdown
