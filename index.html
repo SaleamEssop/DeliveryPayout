@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shopperr Delivery Calculator</title>
+  <title>Shopperr Delivery Logic - Part One</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -62,22 +62,15 @@
       font-weight: bold;
       color: #333;
     }
-    .global-settings {
-      margin-bottom: 20px;
-      padding: 15px;
-      background-color: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Shopperr Delivery Calculator</h1>
+  <h1>Shopperr Delivery Logic - Part One</h1>
 
   <!-- Global Settings Section -->
-  <div class="global-settings">
+  <div>
     <h3>Global Settings</h3>
     <label>Basic Delivery Fee (R):</label>
     <input type="number" id="basicDeliveryFee" value="25" step="0.01">
@@ -88,22 +81,13 @@
     <label>Shopper Excess Split (%):</label>
     <input type="number" id="shopperExcessSplit" value="50" step="0.01">
 
-    <label>Card Fee Percentage (%):</label>
-    <input type="number" id="cardFeePercentage" value="3.5" step="0.01">
-
-    <label>Card Fee Fixed (R):</label>
-    <input type="number" id="cardFeeFixed" value="2" step="0.01">
-
     <label>Minimum Shopper Earnings (R):</label>
     <input type="number" id="minimumShopperEarnings" value="7" step="0.01">
   </div>
 
   <!-- Input Section -->
-  <label>Selling Price (R):</label>
-  <input type="number" id="sellingPrice" value="1100" step="0.01" oninput="updateBasePrice()">
-
-  <label>Base Price (R):</label>
-  <input type="number" id="basePrice" value="1000" step="0.01" oninput="updateSellingPrice()">
+  <label>List Price / Selling Price (R):</label>
+  <input type="number" id="listPrice" value="1100" step="0.01">
 
   <label>Delivery Distance (km):</label>
   <input type="number" id="deliveryDistance" value="7" step="0.01">
@@ -121,127 +105,76 @@
 
   <!-- Results Section -->
   <div class="results" id="results" style="display: none;">
+    <div class="result-item"><strong>Base Price:</strong> R<span id="basePrice">0.00</span></div>
     <div class="result-item"><strong>Driver Delivery Charge:</strong> R<span id="driverDeliveryCharge">0.00</span></div>
-    <div class="result-item"><strong>Shopper Contribution:</strong> R<span id="shopperContribution">0.00</span></div>
-    <div class="result-item"><strong>Shopper Final Earnings:</strong> R<span id="shopperFinalEarnings">0.00</span></div>
+    <div class="result-item"><strong>Total Shopper Commission:</strong> R<span id="totalShopperCommission">0.00</span></div>
+    <div class="result-item"><strong>Shopper Contribution to Delivery:</strong> R<span id="shopperContributionToDelivery">0.00</span></div>
     <div class="result-item"><strong>Customer Delivery Charge:</strong> R<span id="customerDeliveryCharge">0.00</span></div>
-    <div class="result-item"><strong>Total Bill (before fees):</strong> R<span id="totalBill">0.00</span></div>
-    <div class="result-item"><strong>Card Fee:</strong> R<span id="cardFee">0.00</span></div>
-    <div class="result-item"><strong>Payout Shopperr - Excess Delivery:</strong> R<span id="payoutShopperExcessDelivery">0.00</span></div>
-    <div class="result-item"><strong>Final Total Bill (including fees):</strong> R<span id="finalTotalBill">0.00</span></div>
-    <div class="result-item"><strong>Store Payout:</strong> R<span id="storePayout">0.00</span></div>
-    <div class="result-item"><strong>Shopper Payout:</strong> R<span id="shopperPayout">0.00</span></div>
-    <div class="result-item"><strong>Driver Payout:</strong> R<span id="driverPayout">0.00</span></div>
+    <div class="result-item"><strong>Returned Excess:</strong> R<span id="returnedExcess">0.00</span></div>
+    <div class="result-item"><strong>Total Bill (Before Fees):</strong> R<span id="totalBillBeforeFees">0.00</span></div>
   </div>
 </div>
 
 <script>
-  function updateBasePrice() {
-    const sellingPrice = parseFloat(document.getElementById('sellingPrice').value) || 0;
-    const customerContributionPercentage = parseFloat(document.getElementById('customerContributionPercentage').value) || 0;
-
-    if (customerContributionPercentage > 0) {
-      const basePrice = sellingPrice / (1 + customerContributionPercentage / 100);
-      document.getElementById('basePrice').value = basePrice.toFixed(2);
-    }
-  }
-
-  function updateSellingPrice() {
-    const basePrice = parseFloat(document.getElementById('basePrice').value) || 0;
-    const customerContributionPercentage = parseFloat(document.getElementById('customerContributionPercentage').value) || 0;
-
-    if (customerContributionPercentage > 0) {
-      const sellingPrice = basePrice * (1 + customerContributionPercentage / 100);
-      document.getElementById('sellingPrice').value = sellingPrice.toFixed(2);
-    }
-  }
-
   function calculate() {
-    // Get inputs
-    const sellingPrice = parseFloat(document.getElementById('sellingPrice').value) || 0;
-    const deliveryDistance = parseFloat(document.getElementById('deliveryDistance').value) || 0;
-    const shopperCommissionPercentage = parseFloat(document.getElementById('shopperCommissionPercentage').value) || 0;
-    const storeContributionPercentage = parseFloat(document.getElementById('storeContributionPercentage').value) || 0;
-    const customerContributionPercentage = parseFloat(document.getElementById('customerContributionPercentage').value) || 0;
-
     // Get global settings
     const basicDeliveryFee = parseFloat(document.getElementById('basicDeliveryFee').value) || 25;
     const perKmCharge = parseFloat(document.getElementById('perKmCharge').value) || 4;
     const shopperExcessSplit = parseFloat(document.getElementById('shopperExcessSplit').value) / 100 || 0.5;
-    const cardFeePercentage = parseFloat(document.getElementById('cardFeePercentage').value) / 100 || 0.035;
-    const cardFeeFixed = parseFloat(document.getElementById('cardFeeFixed').value) || 2;
     const minimumShopperEarnings = parseFloat(document.getElementById('minimumShopperEarnings').value) || 7;
+
+    // Get inputs
+    const listPrice = parseFloat(document.getElementById('listPrice').value) || 1100;
+    const deliveryDistance = parseFloat(document.getElementById('deliveryDistance').value) || 7;
+    const shopperCommissionPercentage = parseFloat(document.getElementById('shopperCommissionPercentage').value) || 15;
+    const storeContributionPercentage = parseFloat(document.getElementById('storeContributionPercentage').value) || 5;
+    const customerContributionPercentage = parseFloat(document.getElementById('customerContributionPercentage').value) || 10;
 
     try {
       // Step 1: Calculate Base Price
-      const basePrice = sellingPrice / (1 + customerContributionPercentage / 100);
+      const basePrice = Math.round(listPrice / (1 + customerContributionPercentage / 100));
 
       // Step 2: Calculate Driver Delivery Charge
       const extraKm = Math.max(0, deliveryDistance - 5);
       const extraKmCharge = extraKm * perKmCharge;
       const driverDeliveryCharge = basicDeliveryFee + extraKmCharge;
 
-      // Step 3: Calculate Store Revenue
-      const storeBasePrice = basePrice / (1 + (shopperCommissionPercentage * storeContributionPercentage / 100) / 100);
+      // Step 3: Calculate Shopper Commission
+      const shopperCommissionFromStore = Math.round(basePrice * (shopperCommissionPercentage * storeContributionPercentage / 10000));
+      const shopperCommissionFromCustomer = Math.round(basePrice * (shopperCommissionPercentage * customerContributionPercentage / 10000));
+      const totalShopperCommission = shopperCommissionFromStore + shopperCommissionFromCustomer;
 
-      // Step 4: Calculate Shopper Earnings
-      const initialShopperEarningsFromStore = storeBasePrice * (shopperCommissionPercentage * storeContributionPercentage / 100) / 100;
-      const initialShopperEarningsFromCustomer = basePrice * (shopperCommissionPercentage * customerContributionPercentage / 100) / 100;
-      const initialShopperEarnings = initialShopperEarningsFromStore + initialShopperEarningsFromCustomer;
-
-      const excessEarnings = Math.max(0, initialShopperEarnings - minimumShopperEarnings);
-      const shopperContribution = excessEarnings * shopperExcessSplit;
-      const shopperFinalEarnings = minimumShopperEarnings + shopperContribution;
+      // Step 4: Calculate Shopper Contribution to Delivery
+      const excessEarnings = Math.max(0, totalShopperCommission - minimumShopperEarnings);
+      const shopperContributionToDelivery = Math.round(excessEarnings / 2);
 
       // Step 5: Calculate Customer Delivery Charge
-      let customerDeliveryCharge = driverDeliveryCharge - shopperContribution + initialShopperEarningsFromCustomer;
+      let customerDeliveryCharge = driverDeliveryCharge - shopperContributionToDelivery;
 
-      // Handle negative delivery charge (excess payout to shopper)
-      let payoutShopperExcessDelivery = 0;
+      // Handle excess contribution (if shopper contribution exceeds delivery charge)
+      let returnedExcess = 0; // New field: Returned excess to shopper
       if (customerDeliveryCharge < 0) {
-        payoutShopperExcessDelivery = Math.abs(customerDeliveryCharge);
-        customerDeliveryCharge = 0;
+        returnedExcess = Math.abs(customerDeliveryCharge); // Excess amount returned to shopper
+        customerDeliveryCharge = 0; // Set customer delivery charge to zero
       }
 
       // Step 6: Calculate Total Bill (Before Fees)
-      const totalBill = sellingPrice + customerDeliveryCharge - initialShopperEarningsFromCustomer;
-
-      // Step 7: Calculate Card Fee
-      const cardFee = totalBill * cardFeePercentage + cardFeeFixed;
-
-      // Step 8: Allocate Card Fees Proportionally
-      const storeShare = storeBasePrice / totalBill;
-      const shopperShare = shopperFinalEarnings / totalBill;
-      const driverShare = driverDeliveryCharge / totalBill;
-
-      const storeCardFee = cardFee * storeShare;
-      const shopperCardFee = cardFee * shopperShare;
-      const driverCardFee = cardFee * driverShare;
-
-      const storePayout = storeBasePrice - initialShopperEarningsFromStore - storeCardFee;
-      const shopperPayout = shopperFinalEarnings - shopperCardFee + payoutShopperExcessDelivery;
-      const driverPayout = driverDeliveryCharge - driverCardFee;
-
-      // Step 9: Final Total Bill
-      const finalTotalBill = totalBill + cardFee;
+      const totalBillBeforeFees = listPrice + customerDeliveryCharge;
 
       // Display results
+      document.getElementById('basePrice').textContent = basePrice.toFixed(2);
       document.getElementById('driverDeliveryCharge').textContent = driverDeliveryCharge.toFixed(2);
-      document.getElementById('shopperContribution').textContent = shopperContribution.toFixed(2);
-      document.getElementById('shopperFinalEarnings').textContent = shopperFinalEarnings.toFixed(2);
+      document.getElementById('totalShopperCommission').textContent = totalShopperCommission.toFixed(2);
+      document.getElementById('shopperContributionToDelivery').textContent = shopperContributionToDelivery.toFixed(2);
       document.getElementById('customerDeliveryCharge').textContent = customerDeliveryCharge.toFixed(2);
-      document.getElementById('totalBill').textContent = totalBill.toFixed(2);
-      document.getElementById('cardFee').textContent = cardFee.toFixed(2);
-      document.getElementById('payoutShopperExcessDelivery').textContent = payoutShopperExcessDelivery.toFixed(2);
-      document.getElementById('finalTotalBill').textContent = finalTotalBill.toFixed(2);
-      document.getElementById('storePayout').textContent = storePayout.toFixed(2);
-      document.getElementById('shopperPayout').textContent = shopperPayout.toFixed(2);
-      document.getElementById('driverPayout').textContent = driverPayout.toFixed(2);
+      document.getElementById('returnedExcess').textContent = returnedExcess.toFixed(2);
+      document.getElementById('totalBillBeforeFees').textContent = totalBillBeforeFees.toFixed(2);
 
       // Show results section
       document.getElementById('results').style.display = 'block';
     } catch (error) {
       alert('An error occurred during calculation. Please check your inputs.');
+      console.error('Error during calculation:', error);
     }
   }
 </script>
