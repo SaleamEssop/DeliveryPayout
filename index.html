@@ -5,63 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DeliveryPayout Rev1</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f9f9f9;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    input[type="number"] {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .results {
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #f0f8ff;
-      border: 1px solid #d3d3d3;
-      border-radius: 8px;
-    }
-    .result-item {
-      margin-bottom: 10px;
-      font-size: 14px;
-    }
-    .result-item strong {
-      font-weight: bold;
-      color: #333;
-    }
+    /* ... (your CSS styles) ... */
   </style>
 </head>
 <body>
@@ -117,51 +61,42 @@
 
 <script>
   function calculate() {
-    // Get global settings
-    const basicDeliveryFee = parseFloat(document.getElementById('basicDeliveryFee').value) || 25;
-    const perKmCharge = parseFloat(document.getElementById('perKmCharge').value) || 4;
-    const shopperExcessSplit = parseFloat(document.getElementById('shopperExcessSplit').value) / 100 || 0.5;
-    const minimumShopperEarnings = parseFloat(document.getElementById('minimumShopperEarnings').value) || 7;
-    const shopperCommissionPercentage = parseFloat(document.getElementById('shopperCommissionPercentage').value) || 15;
-    const storeContributionPercentage = parseFloat(document.getElementById('storeContributionPercentage').value) || 5;
-    const customerContributionPercentage = parseFloat(document.getElementById('customerContributionPercentage').value) || 10;
+    // Input Validation
+    const basicDeliveryFee = validateInput('basicDeliveryFee', 25);
+    const perKmCharge = validateInput('perKmCharge', 4);
+    const shopperExcessSplit = validateInput('shopperExcessSplit', 50) / 100;
+    const minimumShopperEarnings = validateInput('minimumShopperEarnings', 7);
+    const shopperCommissionPercentage = validateInput('shopperCommissionPercentage', 15);
+    const storeContributionPercentage = validateInput('storeContributionPercentage', 5);
+    const customerContributionPercentage = validateInput('customerContributionPercentage', 10);
+    const listPrice = validateInput('listPrice', 1100);
+    const deliveryDistance = validateInput('deliveryDistance', 7);
 
-    // Get order-specific inputs
-    const listPrice = parseFloat(document.getElementById('listPrice').value) || 1100;
-    const deliveryDistance = parseFloat(document.getElementById('deliveryDistance').value) || 7;
+    if (basicDeliveryFee === null || perKmCharge === null || shopperExcessSplit === null || minimumShopperEarnings === null || shopperCommissionPercentage === null || storeContributionPercentage === null || customerContributionPercentage === null || listPrice === null || deliveryDistance === null) {
+      alert("Please enter valid numbers for all inputs.");
+      return;
+    }
 
     try {
-      // Step 1: Calculate Base Price
+      // ... (your calculation logic, same as before) ...
       const basePrice = Math.round(listPrice / (1 + customerContributionPercentage / 100));
-
-      // Step 2: Calculate Driver Delivery Charge
       const extraKm = Math.max(0, deliveryDistance - 5);
       const extraKmCharge = extraKm * perKmCharge;
       const driverDeliveryCharge = basicDeliveryFee + extraKmCharge;
-
-      // Step 3: Calculate Shopper Commission
       const shopperCommissionFromStore = Math.round(basePrice * (shopperCommissionPercentage * storeContributionPercentage / 10000));
       const shopperCommissionFromCustomer = Math.round(basePrice * (shopperCommissionPercentage * customerContributionPercentage / 10000));
       const totalShopperCommission = shopperCommissionFromStore + shopperCommissionFromCustomer;
-
-      // Step 4: Calculate Shopper Contribution to Delivery
       const excessEarnings = Math.max(0, totalShopperCommission - minimumShopperEarnings);
       const shopperContributionToDelivery = Math.round(excessEarnings / 2);
-
-      // Step 5: Calculate Customer Delivery Charge
       let customerDeliveryCharge = driverDeliveryCharge - shopperContributionToDelivery;
-
-      // Handle excess contribution (if shopper contribution exceeds delivery charge)
-      let returnedExcess = 0; // New field: Returned excess to shopper
+      let returnedExcess = 0;
       if (customerDeliveryCharge < 0) {
-        returnedExcess = Math.abs(customerDeliveryCharge); // Excess amount returned to shopper
-        customerDeliveryCharge = 0; // Set customer delivery charge to zero
+        returnedExcess = Math.abs(customerDeliveryCharge);
+        customerDeliveryCharge = 0;
       }
-
-      // Step 6: Calculate Total Bill (Before Fees)
       const totalBillBeforeFees = listPrice + customerDeliveryCharge;
 
-      // Display results
+      // ... (your display results logic, same as before) ...
       document.getElementById('basePrice').textContent = basePrice.toFixed(2);
       document.getElementById('driverDeliveryCharge').textContent = driverDeliveryCharge.toFixed(2);
       document.getElementById('totalShopperCommission').textContent = totalShopperCommission.toFixed(2);
@@ -169,13 +104,17 @@
       document.getElementById('customerDeliveryCharge').textContent = customerDeliveryCharge.toFixed(2);
       document.getElementById('returnedExcess').textContent = returnedExcess.toFixed(2);
       document.getElementById('totalBillBeforeFees').textContent = totalBillBeforeFees.toFixed(2);
-
-      // Show results section
       document.getElementById('results').style.display = 'block';
+
     } catch (error) {
       alert('An error occurred during calculation. Please check your inputs.');
       console.error('Error during calculation:', error);
     }
+  }
+
+  function validateInput(inputId, defaultValue) {
+    const value = parseFloat(document.getElementById(inputId).value);
+    return isNaN(value) ? null : value;
   }
 </script>
 
