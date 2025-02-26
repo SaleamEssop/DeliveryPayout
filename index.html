@@ -3,51 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DeliveryPayout Rev1</title>
+  <!-- Content Security Policy for enhanced security -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+  <title>DeliveryPayout Calculator</title>
   <style>
-    /* ... (your CSS styles) ... */
+    /* Basic styling for responsiveness and aesthetics */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1, h3 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .results {
+      margin-top: 20px;
+      border-top: 1px solid #ddd;
+      padding-top: 15px;
+    }
+    .result-item {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .result-item strong {
+      display: inline-block;
+      width: 250px;
+      font-weight: normal;
+      color: #555;
+    }
   </style>
 </head>
 <body>
-
 <div class="container">
-  <h1>DeliveryPayout Rev1</h1>
+  <h1>DeliveryPayout Calculator</h1>
 
+  <!-- Global Settings -->
   <div>
     <h3>Global Settings</h3>
     <label>Basic Delivery Fee (R):</label>
     <input type="number" id="basicDeliveryFee" value="25" step="0.01">
-
     <label>Per KM Charge (R):</label>
     <input type="number" id="perKmCharge" value="4" step="0.01">
-
     <label>Shopper Excess Split (%):</label>
     <input type="number" id="shopperExcessSplit" value="50" step="0.01">
-
     <label>Minimum Shopper Earnings (R):</label>
     <input type="number" id="minimumShopperEarnings" value="7" step="0.01">
-
     <label>Shopper Commission Percentage (%):</label>
     <input type="number" id="shopperCommissionPercentage" value="15" step="0.01">
-
     <label>Store Contribution Percentage (%):</label>
     <input type="number" id="storeContributionPercentage" value="5" step="0.01">
-
     <label>Customer Contribution Percentage (%):</label>
     <input type="number" id="customerContributionPercentage" value="10" step="0.01">
   </div>
 
+  <!-- Order Details -->
   <div>
     <h3>Order Details</h3>
     <label>List Price / Selling Price (R):</label>
     <input type="number" id="listPrice" value="1100" step="0.01">
-
     <label>Delivery Distance (km):</label>
     <input type="number" id="deliveryDistance" value="7" step="0.01">
   </div>
 
+  <!-- Calculate Button -->
   <button onclick="calculate()">Calculate</button>
 
+  <!-- Results Section -->
   <div class="results" id="results" style="display: none;">
     <div class="result-item"><strong>Base Price:</strong> R<span id="basePrice">0.00</span></div>
     <div class="result-item"><strong>Driver Delivery Charge:</strong> R<span id="driverDeliveryCharge">0.00</span></div>
@@ -60,6 +118,13 @@
 </div>
 
 <script>
+  // Function to validate and sanitize inputs
+  function validateInput(inputId, defaultValue) {
+    const value = parseFloat(document.getElementById(inputId).value);
+    return isNaN(value) || value < 0 ? defaultValue : value; // Ensure non-negative values
+  }
+
+  // Main calculation function
   function calculate() {
     // Input Validation
     const basicDeliveryFee = validateInput('basicDeliveryFee', 25);
@@ -72,31 +137,30 @@
     const listPrice = validateInput('listPrice', 1100);
     const deliveryDistance = validateInput('deliveryDistance', 7);
 
-    if (basicDeliveryFee === null || perKmCharge === null || shopperExcessSplit === null || minimumShopperEarnings === null || shopperCommissionPercentage === null || storeContributionPercentage === null || customerContributionPercentage === null || listPrice === null || deliveryDistance === null) {
-      alert("Please enter valid numbers for all inputs.");
-      return;
-    }
-
     try {
-      // ... (your calculation logic, same as before) ...
+      // Calculations
       const basePrice = Math.round(listPrice / (1 + customerContributionPercentage / 100));
       const extraKm = Math.max(0, deliveryDistance - 5);
       const extraKmCharge = extraKm * perKmCharge;
       const driverDeliveryCharge = basicDeliveryFee + extraKmCharge;
+
       const shopperCommissionFromStore = Math.round(basePrice * (shopperCommissionPercentage * storeContributionPercentage / 10000));
       const shopperCommissionFromCustomer = Math.round(basePrice * (shopperCommissionPercentage * customerContributionPercentage / 10000));
       const totalShopperCommission = shopperCommissionFromStore + shopperCommissionFromCustomer;
+
       const excessEarnings = Math.max(0, totalShopperCommission - minimumShopperEarnings);
-      const shopperContributionToDelivery = Math.round(excessEarnings / 2);
+      const shopperContributionToDelivery = Math.round(excessEarnings * shopperExcessSplit);
       let customerDeliveryCharge = driverDeliveryCharge - shopperContributionToDelivery;
       let returnedExcess = 0;
+
       if (customerDeliveryCharge < 0) {
         returnedExcess = Math.abs(customerDeliveryCharge);
         customerDeliveryCharge = 0;
       }
+
       const totalBillBeforeFees = listPrice + customerDeliveryCharge;
 
-      // ... (your display results logic, same as before) ...
+      // Display Results
       document.getElementById('basePrice').textContent = basePrice.toFixed(2);
       document.getElementById('driverDeliveryCharge').textContent = driverDeliveryCharge.toFixed(2);
       document.getElementById('totalShopperCommission').textContent = totalShopperCommission.toFixed(2);
@@ -104,19 +168,13 @@
       document.getElementById('customerDeliveryCharge').textContent = customerDeliveryCharge.toFixed(2);
       document.getElementById('returnedExcess').textContent = returnedExcess.toFixed(2);
       document.getElementById('totalBillBeforeFees').textContent = totalBillBeforeFees.toFixed(2);
-      document.getElementById('results').style.display = 'block';
 
+      document.getElementById('results').style.display = 'block';
     } catch (error) {
       alert('An error occurred during calculation. Please check your inputs.');
       console.error('Error during calculation:', error);
     }
   }
-
-  function validateInput(inputId, defaultValue) {
-    const value = parseFloat(document.getElementById(inputId).value);
-    return isNaN(value) ? null : value;
-  }
 </script>
-
 </body>
 </html>
