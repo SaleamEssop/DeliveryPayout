@@ -117,7 +117,65 @@
 
 <script>
   function calculate() {
-    // ... (rest of the JavaScript code remains the same) ...
+    // Get global settings
+    const basicDeliveryFee = parseFloat(document.getElementById('basicDeliveryFee').value) || 25;
+    const perKmCharge = parseFloat(document.getElementById('perKmCharge').value) || 4;
+    const shopperExcessSplit = parseFloat(document.getElementById('shopperExcessSplit').value) / 100 || 0.5;
+    const minimumShopperEarnings = parseFloat(document.getElementById('minimumShopperEarnings').value) || 7;
+    const shopperCommissionPercentage = parseFloat(document.getElementById('shopperCommissionPercentage').value) || 15;
+    const storeContributionPercentage = parseFloat(document.getElementById('storeContributionPercentage').value) || 5;
+    const customerContributionPercentage = parseFloat(document.getElementById('customerContributionPercentage').value) || 10;
+
+    // Get order-specific inputs
+    const listPrice = parseFloat(document.getElementById('listPrice').value) || 1100;
+    const deliveryDistance = parseFloat(document.getElementById('deliveryDistance').value) || 7;
+
+    try {
+      // Step 1: Calculate Base Price
+      const basePrice = Math.round(listPrice / (1 + customerContributionPercentage / 100));
+
+      // Step 2: Calculate Driver Delivery Charge
+      const extraKm = Math.max(0, deliveryDistance - 5);
+      const extraKmCharge = extraKm * perKmCharge;
+      const driverDeliveryCharge = basicDeliveryFee + extraKmCharge;
+
+      // Step 3: Calculate Shopper Commission
+      const shopperCommissionFromStore = Math.round(basePrice * (shopperCommissionPercentage * storeContributionPercentage / 10000));
+      const shopperCommissionFromCustomer = Math.round(basePrice * (shopperCommissionPercentage * customerContributionPercentage / 10000));
+      const totalShopperCommission = shopperCommissionFromStore + shopperCommissionFromCustomer;
+
+      // Step 4: Calculate Shopper Contribution to Delivery
+      const excessEarnings = Math.max(0, totalShopperCommission - minimumShopperEarnings);
+      const shopperContributionToDelivery = Math.round(excessEarnings / 2);
+
+      // Step 5: Calculate Customer Delivery Charge
+      let customerDeliveryCharge = driverDeliveryCharge - shopperContributionToDelivery;
+
+      // Handle excess contribution (if shopper contribution exceeds delivery charge)
+      let returnedExcess = 0; // New field: Returned excess to shopper
+      if (customerDeliveryCharge < 0) {
+        returnedExcess = Math.abs(customerDeliveryCharge); // Excess amount returned to shopper
+        customerDeliveryCharge = 0; // Set customer delivery charge to zero
+      }
+
+      // Step 6: Calculate Total Bill (Before Fees)
+      const totalBillBeforeFees = listPrice + customerDeliveryCharge;
+
+      // Display results
+      document.getElementById('basePrice').textContent = basePrice.toFixed(2);
+      document.getElementById('driverDeliveryCharge').textContent = driverDeliveryCharge.toFixed(2);
+      document.getElementById('totalShopperCommission').textContent = totalShopperCommission.toFixed(2);
+      document.getElementById('shopperContributionToDelivery').textContent = shopperContributionToDelivery.toFixed(2);
+      document.getElementById('customerDeliveryCharge').textContent = customerDeliveryCharge.toFixed(2);
+      document.getElementById('returnedExcess').textContent = returnedExcess.toFixed(2);
+      document.getElementById('totalBillBeforeFees').textContent = totalBillBeforeFees.toFixed(2);
+
+      // Show results section
+      document.getElementById('results').style.display = 'block';
+    } catch (error) {
+      alert('An error occurred during calculation. Please check your inputs.');
+      console.error('Error during calculation:', error);
+    }
   }
 </script>
 
