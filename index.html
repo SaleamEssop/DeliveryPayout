@@ -109,7 +109,7 @@
     <label>Customer Contribution Percentage (%):</label>
     <input type="number" id="customerContributionPercentage" value="10" step="0.01">
     <label>Affiliate Percentage (%):</label>
-    <input type="number" id="affiliatePercentage" value="20" step="0.01">
+    <input type="number" id="affiliatePercentage" value="15" step="0.01">
   </div>
 
   <!-- Order Details -->
@@ -142,10 +142,12 @@
     <div class="indent">Card Fees: R<span id="driverCardFees">0.00</span></div>
 
     <div class="result-item"><strong>Payout to Shopperr:</strong> R<span id="payoutToShopperr">0.00</span></div>
+    <div class="indent"></div> <!-- Empty line for spacing -->
     <div class="indent">Total Commission: R<span id="shopperrCommission">0.00</span></div>
-    <div class="indent">Contribution to Delivery: R<span id="shopperrContribution">0.00</span></div>
-    <div class="indent">Affiliate Payout: R<span id="affiliatePayout">0.00</span></div>
-    <div class="indent">Card Fees: R<span id="shopperrCardFees">0.00</span></div>
+    <div class="indent">Minus - Contribution to Delivery: R<span id="shopperrContribution">0.00</span></div>
+    <div class="indent">Add - Returned Excess: R<span id="returnedExcess">0.00</span></div>
+    <div class="indent">Minus - Affiliate Payout: R<span id="affiliatePayout">0.00</span></div>
+    <div class="indent">Minus - Card Fees: R<span id="shopperrCardFees">0.00</span></div>
 
     <div class="result-item"><strong>Total Card Fees:</strong> R<span id="totalCardFees">0.00</span></div>
     <div class="result-item verification"><strong>Balance Verification:</strong> <span id="balanceVerificationResult"></span></div>
@@ -169,7 +171,7 @@
     const storeContributionPercentage = validateInput('storeContributionPercentage', 5);
     const customerContributionPercentage = validateInput('customerContributionPercentage', 10);
     const cardFeePercentage = validateInput('cardFeePercentage', 3) / 100;
-    const affiliatePercentage = validateInput('affiliatePercentage', 20) / 100; // Affiliate percentage as decimal
+    const affiliatePercentage = validateInput('affiliatePercentage', 15) / 100; // Affiliate percentage as decimal
     const listPrice = validateInput('listPrice', 1100);
     const deliveryDistance = validateInput('deliveryDistance', 7);
 
@@ -238,6 +240,7 @@
       document.getElementById('payoutToShopperr').textContent = payoutToShopperr.toFixed(2);
       document.getElementById('shopperrCommission').textContent = totalShopperrCommission.toFixed(2);
       document.getElementById('shopperrContribution').textContent = shopperrContributionToDelivery.toFixed(2);
+      document.getElementById('returnedExcess').textContent = returnedExcess.toFixed(2);
       document.getElementById('affiliatePayout').textContent = affiliatePayout.toFixed(2);
       document.getElementById('shopperrCardFees').textContent = shopperrCardFee.toFixed(2);
 
