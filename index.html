@@ -97,12 +97,19 @@
     <input type="number" id="shopperrExcessSplit" value="50" step="0.01">
     <label>Minimum Shopperr Earnings (R):</label>
     <input type="number" id="minimumShopperrEarnings" value="7" step="0.01">
+    <label>Card Fee Percentage (%):</label>
+    <input type="number" id="cardFeePercentage" value="3" step="0.01">
+  </div>
+
+  <!-- Store Settings -->
+  <div>
+    <h3>Store Settings</h3>
     <label>Store Contribution Percentage (%):</label>
     <input type="number" id="storeContributionPercentage" value="5" step="0.01">
     <label>Customer Contribution Percentage (%):</label>
     <input type="number" id="customerContributionPercentage" value="10" step="0.01">
-    <label>Card Fee Percentage (%):</label>
-    <input type="number" id="cardFeePercentage" value="3" step="0.01">
+    <label>Affiliate Percentage (%):</label>
+    <input type="number" id="affiliatePercentage" value="20" step="0.01">
   </div>
 
   <!-- Order Details -->
@@ -137,10 +144,11 @@
     <div class="result-item"><strong>Payout to Shopperr:</strong> R<span id="payoutToShopperr">0.00</span></div>
     <div class="indent">Total Commission: R<span id="shopperrCommission">0.00</span></div>
     <div class="indent">Contribution to Delivery: R<span id="shopperrContribution">0.00</span></div>
+    <div class="indent">Affiliate Payout: R<span id="affiliatePayout">0.00</span></div>
     <div class="indent">Card Fees: R<span id="shopperrCardFees">0.00</span></div>
 
     <div class="result-item"><strong>Total Card Fees:</strong> R<span id="totalCardFees">0.00</span></div>
-    <div class="result-item verification"><strong>Verification:</strong> <span id="verificationResult"></span></div>
+    <div class="result-item verification"><strong>Balance Verification:</strong> <span id="balanceVerificationResult"></span></div>
   </div>
 </div>
 
@@ -161,6 +169,7 @@
     const storeContributionPercentage = validateInput('storeContributionPercentage', 5);
     const customerContributionPercentage = validateInput('customerContributionPercentage', 10);
     const cardFeePercentage = validateInput('cardFeePercentage', 3) / 100;
+    const affiliatePercentage = validateInput('affiliatePercentage', 20) / 100; // Affiliate percentage as decimal
     const listPrice = validateInput('listPrice', 1100);
     const deliveryDistance = validateInput('deliveryDistance', 7);
 
@@ -189,7 +198,7 @@
       const totalBill = listPrice + customerDeliveryCharge;
 
       // Payout Calculations
-      const storeNetAmount = basePrice - shopperrCommissionFromStore; // Only deduct store's portion of commission
+      const storeNetAmount = basePrice - shopperrCommissionFromStore; // Deduct only store's portion of commission
       const storeCardFee = storeNetAmount * cardFeePercentage;
       const payoutToStore = storeNetAmount - storeCardFee;
 
@@ -197,14 +206,16 @@
       const payoutToDriver = driverDeliveryCharge - driverCardFee;
 
       const shopperrCardFee = totalShopperrCommission * cardFeePercentage;
-      const payoutToShopperr = (totalShopperrCommission - shopperrContributionToDelivery) + returnedExcess - shopperrCardFee;
+      const interimShopperrPayout = (totalShopperrCommission - shopperrContributionToDelivery) + returnedExcess - shopperrCardFee;
+      const affiliatePayout = interimShopperrPayout * affiliatePercentage; // Calculate affiliate payout
+      const payoutToShopperr = interimShopperrPayout - affiliatePayout; // Deduct affiliate payout from shopperr's interim payout
 
       // Total Card Fees
       const totalCardFees = storeCardFee + driverCardFee + shopperrCardFee;
 
-      // Verification
-      const verificationTotal = payoutToStore + payoutToDriver + payoutToShopperr + totalCardFees;
-      const isVerified = Math.abs(verificationTotal - listPrice) <= 0.01;
+      // Balance Verification
+      const totalPayouts = payoutToStore + payoutToDriver + payoutToShopperr + totalCardFees + affiliatePayout;
+      const isBalanced = Math.abs(totalPayouts - listPrice) <= 0.01;
 
       // Display Results
       document.getElementById('basePrice').textContent = basePrice.toFixed(2);
@@ -215,7 +226,7 @@
       // Store Payout Breakdown
       document.getElementById('payoutToStore').textContent = payoutToStore.toFixed(2);
       document.getElementById('storeBasePrice').textContent = basePrice.toFixed(2);
-      document.getElementById('storeShopperrCommission').textContent = shopperrCommissionFromStore.toFixed(2); // Only store's portion
+      document.getElementById('storeShopperrCommission').textContent = shopperrCommissionFromStore.toFixed(2);
       document.getElementById('storeCardFees').textContent = storeCardFee.toFixed(2);
 
       // Driver Payout Breakdown
@@ -227,17 +238,18 @@
       document.getElementById('payoutToShopperr').textContent = payoutToShopperr.toFixed(2);
       document.getElementById('shopperrCommission').textContent = totalShopperrCommission.toFixed(2);
       document.getElementById('shopperrContribution').textContent = shopperrContributionToDelivery.toFixed(2);
+      document.getElementById('affiliatePayout').textContent = affiliatePayout.toFixed(2);
       document.getElementById('shopperrCardFees').textContent = shopperrCardFee.toFixed(2);
 
       // Total Card Fees
       document.getElementById('totalCardFees').textContent = totalCardFees.toFixed(2);
 
-      // Verification Output
-      const verificationMessage = isVerified
-        ? ` Verified: ${verificationTotal.toFixed(2)} matches List Price (${listPrice.toFixed(2)})`
-        : ` Error: ${verificationTotal.toFixed(2)} does not match List Price (${listPrice.toFixed(2)})`;
-      document.getElementById('verificationResult').textContent = verificationMessage;
-      document.getElementById('verificationResult').className = isVerified ? 'verification' : 'verification error';
+      // Balance Verification Output
+      const balanceMessage = isBalanced
+        ? ` Balanced: ${totalPayouts.toFixed(2)} matches List Price (${listPrice.toFixed(2)})`
+        : ` Imbalanced: ${totalPayouts.toFixed(2)} does not match List Price (${listPrice.toFixed(2)})`;
+      document.getElementById('balanceVerificationResult').textContent = balanceMessage;
+      document.getElementById('balanceVerificationResult').className = isBalanced ? 'verification' : 'verification error';
 
       document.getElementById('results').style.display = 'block';
     } catch (error) {
